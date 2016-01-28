@@ -8,4 +8,93 @@ lpabon@redhat.com
 http://github/lpabon
 @_lpabon_
 
-* Slide 1 Title
+* Agenda
+
+- One
+
+- Two
+
+* About me
+
+- Luis Pabón
+
+* History
+
+- Why? Heketi.
+
+* Design
+
+- Show diagram
+
+* Requirements
+
+- One, two
+
+* Other Technologies
+
+- CherryPy, etc.
+
+* Why Go?
+
+- Easy JSON
+
+- Concurrency
+
+- Easy deployment
+
+* Lessons learned
+
+* Asynchronous HTTP
+
+* BoltDB
+
+* Logging
+
+* JSON
+
+- Usage in Go
+
+- Checking
+
+* JSON Objects
+
+- Models
+
+* Concurrency
+
+* SSH
+
+* Middleware
+
+* Continuous Integration
+
+- Travis
+
+- Coveralls
+
+* CI - Mocking
+
+* Versioning
+
+* Authentication
+
+* Deployment and Systemd
+
+* Client - Arguments
+
+* Client - HTTP
+
+* Dockerizing
+
+* Configuration
+
+- Used JSON
+
+- YAML used by other projects.
+
+* Issues
+
+- Shutting down the server
+
+
+
