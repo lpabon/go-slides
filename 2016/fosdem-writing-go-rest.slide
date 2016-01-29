@@ -17,7 +17,7 @@ Red Hat Storage
 
 * History
 
-Need a service to manage the GlusterFS volume lifecycle across multiple clusters.
+Needed a service to manage the GlusterFS volume lifecycle across multiple clusters.
 
 Requirements:
 
@@ -110,27 +110,11 @@ Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 - *Websocket*: Implements WebSocket protocol
 - Many more...
 
-Mux Example:
-
-    r := mux.NewRouter()
-    r.Methods("GET").
-            Path("/products/{key}").
-            Handler(ProductInfoHandler)
-    ...
-    vars := mux.Vars(request)
-    key := vars["key"]
-
 .image fosdem-writing-go-rest/gorilla-icon-64.png _ 90
 
 * Routing Example
 
 .code fosdem-writing-go-rest/gorilla.go /type/, 
-
-* Asynchronous HTTP
-
-* BoltDB
-
-* Logging
 
 * JSON
 
@@ -141,6 +125,12 @@ Mux Example:
 * JSON Objects
 
 - Models
+
+* Logging
+
+* Asynchronous HTTP
+
+* BoltDB
 
 * Concurrency
 
