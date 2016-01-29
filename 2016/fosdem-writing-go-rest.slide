@@ -1,46 +1,70 @@
-Building a Go REST application
+Building A Go REST Application
 Experiences learned during the development of Heketi
 31 Jan 2016
 
 Luis Pabón
-Principal Software Engineer, Red Hat
+Principal Software Engineer, Red Hat Storage
 lpabon@redhat.com
 http://github/lpabon
 @_lpabon_
 
-* Agenda
-
-- One
-
-- Two
-
 * About me
 
-- Luis Pabón
+Luis Pabón, Principal Software Engineer 
+Red Hat Storage
+
+.image fosdem-writing-go-rest/me.jpg _ 800
 
 * History
 
-- Why? Heketi.
+Need a service to manage the GlusterFS volume lifecycle across multiple clusters.
+
+Requirements:
+
+- Http REST service with authentication
+- Manage multiple nodes concurrently
+- Maintain information on the clusters
+- Simple deployment
+- Allow concurrent requests
+- Non-blocking
+
+* Project Heketi
+
+.link https://github.com/heketi/heketi
+
+.image fosdem-writing-go-rest/heketi_overview.png _ 640
 
 * Design
 
-- Show diagram
-
-* Requirements
-
-- One, two
+.image fosdem-writing-go-rest/arch.jpg
 
 * Other Technologies
 
-- CherryPy, etc.
+Python
+
+- CherryPy, Bottlepy, Django
+
+Ruby 
+
+- Rails, Sinatra, RESTRack
+
+Java
+
+- RESTx, Jersey
 
 * Why Go?
 
-- Easy JSON
+- Easy JSON integration
 
 - Concurrency
 
-- Easy deployment
+- Simple deployment
+
+- Simple HTTP framework
+
+- Integrated testing framework
+
+- Extra one*
 
 * Lessons learned
 
