@@ -68,22 +68,32 @@ Java
 
 * HTTP/REST Standards and Definitions
 
-Client Methods:
+*Endpoint*: 
+
+- http://server:port/<endpoint...>
+
+*Client*Methods*:
+
 - GET, PUT, HEAD, POST, DELETE
 - More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html][W3.org]]
 
-Server Return Status Codes:
+*Body*: 
+
+- Contains data requested by the client.  In REST calls, this could be either in XML or JSON format.
+
+* HTTP/REST Standards and Definitions
+
+*Head*: 
+
+- Metadata like _Content-Type_ and _Status_
+
+*Server*Return*Status*Codes*:
+
 - 2xx: Successful 
 - 3xx: Redirection
 - 4xx: Client Error
 - 5xx: Server Error
 - More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html][W3.org]]
-
-Endpoint:
-- http://server:port/<endpoint...>
-
-Body:
-- Contains data requested by the client.  In REST calls, this could be either in XML or JSON format.
 
 * Lessons learned
 
@@ -95,21 +105,26 @@ Body:
 
 Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 
-.image fosdem-writing-go-rest/gorilla-icon-64.png _ 90
+- *Mux*: Routing
+- *Context*: Stores global variables
+- *Websocket*: Implements WebSocket protocol
+- Many more...
 
-Example:
+Mux Example:
 
     r := mux.NewRouter()
     r.Methods("GET").
             Path("/products/{key}").
             Handler(ProductInfoHandler)
-    r.Methods("POST").
-            Path("/products/{key}").
-            Handler(ModifyProductHandler)
     ...
     vars := mux.Vars(request)
     key := vars["key"]
 
+.image fosdem-writing-go-rest/gorilla-icon-64.png _ 90
+
+* Routing Example
+
+.code fosdem-writing-go-rest/gorilla.go /type/, 
 
 * Asynchronous HTTP
 
