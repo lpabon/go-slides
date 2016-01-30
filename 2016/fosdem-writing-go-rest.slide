@@ -97,6 +97,8 @@ Java
 
 * Lessons learned
 
+* Routing
+
 * Simple Go Web server
 
 .code fosdem-writing-go-rest/helloworld.go
@@ -203,9 +205,24 @@ Create Volume Request:
 
 .code fosdem-writing-go-rest/app2.go /Main/,/End Main/
 
-* Logging
-
 * Asynchronous HTTP
+
+- Avoid timeouts
+- Provide a more responsive server
+- Server to provide a temporary resource to poll for completion
+
+.image fosdem-writing-go-rest/async.png
+
+* Heketi's Asynchronous API
+Some operations may take a long time to process. For these operations, Heketi will return _202_Accepted_ with a temporary resource set inside the Location header. A client can then issue a _GET_ on this temporary resource and receive the following:
+
+- HTTP Status 200: Request is still in progress. We may decide to add some JSON ETA data here in future releases. Header _X-Pending_ will be set to the value of true
+- HTTP Status 404: Temporary resource requested is not found.
+- HTTP Status 500: Request completed and has failed. Body will be filled in with error information.
+- HTTP Status 303 See Other: Request has been completed successfully. The information requested can be retrieved by issuing a GET on the resource set inside the Location header.
+- HTTP Status 204 Done: Request has been completed successfully. There is no data to return.
+
+* Logging
 
 * BoltDB
 
