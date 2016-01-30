@@ -58,7 +58,7 @@ func (a *App) SaveKey(w http.ResponseWriter, r *http.Request) {
 
 	// Check information in JSON request
 	if len(key) == 0 || len(msg.Value) == 0 {
-		http.Error(w, "Missing infomration", http.StatusBadRequest)
+		http.Error(w, "Missing information", http.StatusBadRequest)
 		return
 	}
 

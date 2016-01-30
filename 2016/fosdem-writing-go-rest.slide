@@ -97,13 +97,15 @@ Java
 
 * Lessons learned
 
-
-
 * Routing
 
 * Simple Go Web server
 
 .code fosdem-writing-go-rest/helloworld.go
+
+* Demo
+
+.video fosdem-writing-go-rest/helloworld.webm video/webm
 
 * Routing
 
@@ -119,6 +121,10 @@ Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 * Create an App
 
 .code fosdem-writing-go-rest/app1.go /type/,
+
+* Demo
+
+.video fosdem-writing-go-rest/app1.webm video/webm
 
 * JSON
 
@@ -207,6 +213,10 @@ Create Volume Request:
 
 .code fosdem-writing-go-rest/app2.go /Main/,/End Main/
 
+* Demo
+
+.video fosdem-writing-go-rest/app2.webm video/webm
+
 * Logging
 
 - Golang provides simple Log API
@@ -248,6 +258,10 @@ Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Man
 
 .code fosdem-writing-go-rest/app4.go /Func BzKeys/,/End Func BzKeys/
 .code fosdem-writing-go-rest/app4.go /Main/,/End Main/
+
+* Demo
+
+.video fosdem-writing-go-rest/app4.webm video/webm
 
 * Database
 

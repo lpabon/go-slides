@@ -10,7 +10,7 @@ import (
 
 func main() {
 	world := "World"
-	http.HandleFunc("/helloworld",
+	http.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) { // HL
 			fmt.Fprintf(w, "Hello %s", world) // HL
 		}) // HL
