@@ -224,6 +224,15 @@ Some operations may take a long time to process. For these operations, Heketi wi
 
 * Logging
 
+- Golang provides simple Log API
+- Create your own or use others like [[https://github.com/op/go-logging][Go-logging]]
+
+Add logging to App:
+
+.code fosdem-writing-go-rest/app3.go /Log Var/,/end Log Var/
+
+.code fosdem-writing-go-rest/app3.go /Main/,/End Main/
+
 * BoltDB
 
 * Concurrency
