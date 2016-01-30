@@ -205,6 +205,19 @@ Create Volume Request:
 
 .code fosdem-writing-go-rest/app2.go /Main/,/End Main/
 
+* Logging
+
+- Golang provides simple Log API
+- Create your own or use others like [[https://github.com/op/go-logging][Go-logging]]
+
+Add logging to App:
+
+.code fosdem-writing-go-rest/app3.go /Log Var/,/end Log Var/
+
+.code fosdem-writing-go-rest/app3.go /Main/,/End Main/
+
+* Asynchronous HTTP
+
 * Asynchronous HTTP
 
 - Avoid timeouts
@@ -222,16 +235,17 @@ Some operations may take a long time to process. For these operations, Heketi wi
 - HTTP Status 303 See Other: Request has been completed successfully. The information requested can be retrieved by issuing a GET on the resource set inside the Location header.
 - HTTP Status 204 Done: Request has been completed successfully. There is no data to return.
 
-* Logging
+* App: Setup Asynchronous HTTP
 
-- Golang provides simple Log API
-- Create your own or use others like [[https://github.com/op/go-logging][Go-logging]]
+Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Manager]]:
 
-Add logging to App:
+.code fosdem-writing-go-rest/app4.go /App struct/,/end App struct/
+.code fosdem-writing-go-rest/app4.go /Func NewApp/,/end Func NewApp/
 
-.code fosdem-writing-go-rest/app3.go /Log Var/,/end Log Var/
+* App: Asynchronous HTTP
 
-.code fosdem-writing-go-rest/app3.go /Main/,/End Main/
+.code fosdem-writing-go-rest/app4.go /Func BzKeys/,/End Func BzKeys/
+.code fosdem-writing-go-rest/app4.go /Main/,/End Main/
 
 * BoltDB
 
