@@ -393,7 +393,7 @@ Generating a client token in Python:
 * Other areas
 
 - Adding [[https://github.com/heketi/heketi/blob/master/extras/systemd/heketi.service][Systemd support]]
-- [[https://github.com/heketi/heketi/tree/master/extras/docker/centos7][Containerize]
+- [[https://github.com/heketi/heketi/tree/master/extras/docker/centos7][Containerize]]
 - Client libraries
 - Config file
 
