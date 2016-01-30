@@ -214,7 +214,7 @@ Create Volume Request:
 .image fosdem-writing-go-rest/async.png
 
 * Heketi's Asynchronous API
-Some operations may take a long time to process. For these operations, Heketi will return _202_Accepted_ with a temporary resource set inside the Location header. A client can then issue a _GET_ on this temporary resource and receive the following:
+Some operations may take a long time to process. For these operations, Heketi will return _202_Accepted_ with a temporary resource set inside the _Location_ header. A client can then issue a _GET_ on this temporary resource and receive the following:
 
 - HTTP Status 200: Request is still in progress. We may decide to add some JSON ETA data here in future releases. Header _X-Pending_ will be set to the value of true
 - HTTP Status 404: Temporary resource requested is not found.
