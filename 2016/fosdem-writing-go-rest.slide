@@ -17,7 +17,7 @@ Red Hat Storage
 
 * History
 
-Needed a service to manage the GlusterFS volume lifecycle across multiple clusters.
+Needed a service to manage the lifecycle of GlusterFS volumes across multiple clusters.
 
 Requirements:
 
@@ -96,6 +96,8 @@ Java
 - More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html][W3.org]]
 
 * Lessons learned
+
+
 
 * Routing
 
@@ -247,40 +249,151 @@ Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Man
 .code fosdem-writing-go-rest/app4.go /Func BzKeys/,/End Func BzKeys/
 .code fosdem-writing-go-rest/app4.go /Main/,/End Main/
 
-* BoltDB
+* Database
 
-* Concurrency
+* BoltDB Database
 
-* SSH
+There are many databases for applications.
+
+A great, simple, but powerful database for Go applications is:  [[https://github.com/boltdb/bolt][BoltDB]]
+
+- Key-Value
+- 100% in Go
+- Also has: Key iterators, Range scans, and more
+- But, most important:
+
+!! It is a transactional database !!
+
+* Data Access
+
+- Data is saved in the database in _buckets_
+- _Buckets_ store _Keys_ and their _Values_
+
+Put data:
+
+    db.Update(func(tx *bolt.Tx) error {
+        b := tx.Bucket([]byte("MyBucket"))
+        err := b.Put([]byte("answer"), []byte("42"))
+        return err
+    })
+
+Get data:
+
+    db.Update(func(tx *bolt.Tx) error {
+        b := tx.Bucket([]byte("MyBucket"))
+        err := b.Put([]byte("answer"), []byte("42"))
+        return err
+    })
+
+* More on BoltDB
+
+*Transactional*database*+*Closures*=*AWESOMENESS*
+
+.image fosdem-writing-go-rest/awesomeness-achieved.jpg
+
+* Heketi Example
+    var msg NodeAddRequest
+    utils.GetJsonFromRequest(r, &msg)
+    err = a.db.Update(func(tx *bolt.Tx) error {
+        cluster, err := NewClusterEntryFromId(tx, msg.ClusterId)
+        if err != nil {
+            return err
+        }
+
+        cluster.NodeAdd(node.Info.Id)
+        err = cluster.Save(tx)
+        if err != nil {
+            return err
+        }
+        err = node.Save(tx)
+        if err != nil {
+            return err
+        }
+        return nil
+    })
+
+.link https://github.com/heketi/heketi/blob/master/apps/glusterfs/app_node.go#L27
+
+* Rolling back transactions in functions
+
+Ok, cool, so the database can roll back. 
+
+Can I do that in my normal functions? *YES!*
+
+    func work() (rollback_err error) {
+
+        defer func() {
+            if rollback_err != nil {
+                // .. Rollback
+            }
+        }
+
+        // Do work
+
+        // Do more work
+
+        // Do even more work
+        
+    } 
 
 * Middleware
 
-* Continuous Integration
+* Middleware
 
-- Travis
+There are quite a few middleware frameworks for Go, but the simplest (and very powerful) is [[https://github.com/codegangsta/negroni][Negroni]]
 
-- Coveralls
+All you need is the something like the following in your middleware:
 
-* CI - Mocking
+    func MyMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+      // do some stuff before
+      next(rw, r)
+      // do some stuff after
+    }
 
-* Versioning
+You can add the middleware:
+
+    n := negroni.New()
+    n.Use(negroni.HandlerFunc(MyMiddleware))
+
 
 * Authentication
 
-* Deployment and Systemd
+Heketi uses simple JSON Web Tokens (JWT) as stated in the [[https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-25][IETF draft]]. A JWT is created for each REST call encrypted using a shared Key.
 
-* Client - Arguments
+Generating a client token in Python:
 
-* Client - HTTP
+    import jwt
+    import datetime
+    import hashlib
+    method = 'GET'
+    uri = '/volumes'
+    secret = 'My secret'
+    claims = {}
+    claims['iss'] = 'admin'
+    claims['iat'] = datetime.datetime.utcnow()
+    claims['exp'] = datetime.datetime.utcnow() \
+        + datetime.timedelta(minutes=10)
+    claims['qsh'] = hashlib.sha256(method + '&' + uri).hexdigest()
+    print jwt.encode(claims, secret, algorithm='HS256')
 
-* Dockerizing
+- Place in request header
 
-* Configuration
+    Authentication: bearer eyJhb[...omitted for brevity...]HgQ
 
-- Used JSON
+* Lastly
 
-- YAML used by other projects.
+* CI and Unit Tests
 
-* Issues
+- Travis, Coveralls
+- HTTP test package: net/http/httptest
+- Mocking with interfaces
 
-- Shutting down the server
+.image fosdem-writing-go-rest/testing.jpg _ 500
+
+* Other areas
+
+- Adding [[https://github.com/heketi/heketi/blob/master/extras/systemd/heketi.service][Systemd support]]
+- [[https://github.com/heketi/heketi/tree/master/extras/docker/centos7][Containerize]
+- Client libraries
+- Config file
+
