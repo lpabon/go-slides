@@ -3,14 +3,14 @@ Experiences learned during the development of Heketi
 31 Jan 2016
 
 Luis Pabón
-Principal Software Engineer, Red Hat Storage
+Red Hat
 lpabon@redhat.com
 http://github/lpabon
 @_lpabon_
 
 * About me
 
-Luis Pabón, Principal Software Engineer 
+Luis Pabón, Principal Software Engineer
 Red Hat Storage
 
 .image fosdem-writing-go-rest/me.jpg _ 800
@@ -44,7 +44,7 @@ Python
 
 - CherryPy, Bottlepy, Django
 
-Ruby 
+Ruby
 
 - Rails, Sinatra, RESTRack
 
@@ -68,7 +68,7 @@ Java
 
 * HTTP/REST Standards and Definitions
 
-*Endpoint*: 
+*Endpoint*:
 
 - http://server:port/<endpoint...>
 
@@ -77,19 +77,19 @@ Java
 - GET, PUT, HEAD, POST, DELETE
 - More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html][W3.org]]
 
-*Body*: 
+*Body*:
 
-- Contains data requested by the client.  In REST calls, this could be either in XML or JSON format.
+- Contains data requested by the client. In REST calls, this could be either in XML or JSON format.
 
 * HTTP/REST Standards and Definitions
 
-*Head*: 
+*Head*:
 
 - Metadata like _Content-Type_ and _Status_
 
 *Server*Return*Status*Codes*:
 
-- 2xx: Successful 
+- 2xx: Successful
 - 3xx: Redirection
 - 4xx: Client Error
 - 5xx: Server Error
@@ -112,19 +112,96 @@ Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 
 .image fosdem-writing-go-rest/gorilla-icon-64.png _ 90
 
-* Routing Example
+* Create an App
 
-.code fosdem-writing-go-rest/gorilla.go /type/, 
+.code fosdem-writing-go-rest/app1.go /type/,
 
 * JSON
 
-- Usage in Go
+* JSON
 
-- Checking
+- Supported by the languange
 
-* JSON Objects
+- Easy to setup by adding tags to structs
 
-- Models
+- Bool, float64, strings, slices, maps, integers, nil supported
+
+More information at [[https://golang.org/pkg/encoding/json/][Golang.org]]
+
+* Heketi JSON Models
+Brick Information:
+
+    type BrickInfo struct {
+        Id       string `json:"id"`
+        Path     string `json:"path"`
+        DeviceId string `json:"device"`
+        NodeId   string `json:"node"`
+
+        // Size in KB
+        Size uint64 `json:"size"`
+    }
+
+* Heketi JSON Model with Anonymous Struct
+
+Create Volume Request:
+
+    type VolumeCreateRequest struct {
+        // Size in GB
+        Size       int                  `json:"size"`
+        Clusters   []string             `json:"clusters,omitempty"`
+        Name       string               `json:"name"`
+        Durability VolumeDurabilityInfo `json:"durability,omitempty"`
+        Snapshot   struct {
+            Enable bool    `json:"enable"`
+            Factor float32 `json:"factor"`
+        } `json:"snapshot"`
+    }
+
+* Heketi JSON Model with Embedding
+
+    // Common accross requests and responses
+    type Device struct {
+        Name   string `json:"name"`
+        Weight int    `json:"weight"`
+    }
+
+    // Request
+    type DeviceAddRequest struct {
+        Device
+        NodeId string `json:"node"`
+    }
+
+    type DeviceInfo struct {
+        Device
+        Storage StorageSize `json:"storage"`
+        Id      string      `json:"id"`
+    }
+
+    // Response
+    type DeviceInfoResponse struct {
+        DeviceInfo
+        Bricks []BrickInfo `json:"bricks"`
+    } 
+
+* Update App to support JSON 
+
+.code fosdem-writing-go-rest/app2.go /start JSON structs/,/end JSON structs/
+
+* App: SaveKey()
+
+.code fosdem-writing-go-rest/app2.go /Func Save/,/End Func Save/
+
+* App: GetKey()
+
+.code fosdem-writing-go-rest/app2.go /Func Get/,/End Func Get/
+
+* App: GetAllKeys()
+
+.code fosdem-writing-go-rest/app2.go /Func GetAll/,/End Func GetAll/
+
+* App: Main()
+
+.code fosdem-writing-go-rest/app2.go /Main/,/End Main/
 
 * Logging
 
@@ -167,6 +244,3 @@ Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 * Issues
 
 - Shutting down the server
-
-
-
