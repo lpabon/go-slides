@@ -264,8 +264,8 @@ Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Man
 
 * Demo
 
-.video fosdem-writing-go-rest/app4.webm video/webm
-#.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/fosdem-writing-go-rest/app4.webm Click Here
+#.video fosdem-writing-go-rest/app4.webm video/webm
+.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/fosdem-writing-go-rest/app4.webm Click Here
 
 * Database
 
