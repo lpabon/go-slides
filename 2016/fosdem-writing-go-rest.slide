@@ -105,7 +105,8 @@ Java
 
 * Demo
 
-.video fosdem-writing-go-rest/helloworld.webm video/webm
+#.video fosdem-writing-go-rest/helloworld.webm video/webm
+.link fosdem-writing-go-rest/helloworld.webm Click Here
 
 * Routing
 
@@ -124,7 +125,8 @@ Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
 
 * Demo
 
-.video fosdem-writing-go-rest/app1.webm video/webm
+#.video fosdem-writing-go-rest/app1.webm video/webm
+.link fosdem-writing-go-rest/app1.webm Click Here
 
 * JSON
 
@@ -215,7 +217,8 @@ Create Volume Request:
 
 * Demo
 
-.video fosdem-writing-go-rest/app2.webm video/webm
+#.video fosdem-writing-go-rest/app2.webm video/webm
+.link fosdem-writing-go-rest/app2.webm Click Here
 
 * Logging
 
@@ -261,7 +264,8 @@ Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Man
 
 * Demo
 
-.video fosdem-writing-go-rest/app4.webm video/webm
+#.video fosdem-writing-go-rest/app4.webm video/webm
+.link fosdem-writing-go-rest/app4.webm Click Here
 
 * Database
 
