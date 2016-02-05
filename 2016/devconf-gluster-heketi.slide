@@ -1,0 +1,87 @@
+Automated GlusterFS Volume Management with Heketi
+06 Feb 2016
+
+Luis Pabón
+Red Hat
+lpabon@redhat.com
+https://github.com/lpabon/go-slides
+@_lpabon_
+
+* About me
+
+Luis Pabón, Principal Software Engineer
+Red Hat Storage
+
+.image fosdem-writing-go-rest/me.jpg _ 800
+
+* History
+
+Needed a service to manage the lifecycle of GlusterFS volumes across multiple clusters.
+
+* GlusterFS
+
+* GlusterFS Overview
+
+.image devconf-gluster-heketi/diagram-glusterfs.png
+
+* GlusterFS Volume
+
+A brick is the combination of a node and an export directory.
+A volume is a collection of bricks
+
+.image devconf-gluster-heketi/gluster_bricks.png 
+
+* Node Setup
+
+On each system:
+- Peer probe to create trusted storage pool
+- Create the devices (RAID, Disk, LVM)
+- Setup a file system
+- Create directory
+
+* Create a volume
+
+	# sudo gluster volume create myvolume \
+	    replica 2 \
+	    transport tcp \
+	    server1:/export/brick/myvolume1 \
+	    server2:/export/brick/myvolume2 \
+	    server3:/export/brick/myvolume3 \
+	    server4:/export/brick/myvolume4 \
+	    server5:/export/brick/myvolume5 \
+	    server6:/export/brick/myvolume6
+	# sudo gluster volume start myvolume
+	# sudo mount -t glusterfs server1:myvolume /mnt/gluster/myvolume
+
+* Now do the same for...
+
+.image devconf-gluster-heketi/datacenter.jpg
+
+* Wait..WHAT?!?
+
+.image devconf-gluster-heketi/scared_dog.jpg
+
+* Heketi
+
+* Requirements
+
+- Http REST service with authentication
+- Manage multiple nodes concurrently
+- Maintain information on the clusters
+- Simple deployment
+- Allow concurrent requests
+- Non-blocking
+
+* Project Heketi
+
+.link https://github.com/heketi/heketi
+
+.image fosdem-writing-go-rest/heketi_overview.png _ 640
+
+* Design
+
+.image devconf-gluster-heketi/arch.svg 768 1024
+
+* Workflow
+
+* Demo
