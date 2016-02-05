@@ -29,7 +29,7 @@ Needed a service to manage the lifecycle of GlusterFS volumes across multiple cl
 A brick is the combination of a node and an export directory.
 A volume is a collection of bricks
 
-.image devconf-gluster-heketi/gluster_bricks.png 
+.image devconf-gluster-heketi/volume.png _ 600
 
 * Node Setup
 
@@ -38,6 +38,8 @@ On each system:
 - Create the devices (RAID, Disk, LVM)
 - Setup a file system
 - Create directory
+
+.image devconf-gluster-heketi/gluster_bricks.png 
 
 * Create a volume
 
@@ -76,7 +78,7 @@ On each system:
 
 .link https://github.com/heketi/heketi
 
-.image fosdem-writing-go-rest/heketi_overview.png _ 640
+.image devconf-gluster-heketi/overview.svg 600 800
 
 * Design
 
@@ -84,4 +86,37 @@ On each system:
 
 * Workflow
 
+.image fosdem-writing-go-rest/heketi_overview.png _ 640
+
 * Demo
+
+* Availability
+
+Fedora/EPEL
+
+- [[https://github.com/heketi/heketi/wiki/Installation][Documentation]]
+
+Container
+
+- [[https://hub.docker.com/r/heketi/heketi/][Documentation]]
+- Easy to try out in _mock_ mode
+
+	# docker run -d -p 8080:8080 heketi/heketi
+	# curl http://localhost:8080/hello
+
+- Or as to manage real systems
+
+	# mkdir config
+	# cp custom_heketi.json config/heketi.json
+	# mkdir db
+	# chmod 777 db
+	# docker run -d -p 8080:8080 --volume $PWD/config:/etc/heketi \
+	   		--volume $PWD/db:/var/lib/heketi \
+	   		heketi/heketi
+
+* Crawl...
+
+Known Issues:
+
+- Conflict resolution
+- Update database when _X_ fails
