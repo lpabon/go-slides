@@ -65,14 +65,15 @@ On each system:
 
 * Heketi
 
-* Requirements
+* What is Heketi
 
-- Http REST service with authentication
+- REST application with authentication
 - Manage multiple nodes concurrently
 - Maintain information on the clusters
 - Simple deployment
 - Allow concurrent requests
 - Non-blocking
+- Written in Go
 
 * Project Heketi
 
@@ -86,37 +87,70 @@ On each system:
 
 * Workflow
 
-.image fosdem-writing-go-rest/heketi_overview.png _ 640
+* Create clusters
+
+A _cluster_ is a collection of nodes in a trusted storage pool
+
+.image devconf-gluster-heketi/h2.svg 550 _
+
+* Add a node to a cluster
+
+Heketi adds _node_ on a specific _zone_ to the cluster
+
+.image devconf-gluster-heketi/h3.svg 550 _
+
+* Add more nodes
+
+Adding more nodes causes Heketi to create a trusted storage pool automatically
+
+.image devconf-gluster-heketi/h4.svg 500 _
+
+* Add devices to nodes
+
+When adding a device, Heketi creates an LVM _volume_group_ on the device.
+
+.image devconf-gluster-heketi/h5.svg 500 _
+
+* Create a second cluster
+
+Heketi supports multiple GlusterFS clusters
+
+.image devconf-gluster-heketi/h6.svg 500 _
+
+* Create a volume
+
+A _service_ can then request a volume to be created
+
+.image devconf-gluster-heketi/h7.svg 500 _
+
+* Brick allocation
+
+Heketi will determine the brick locations, it will then format and setup the filesystem
+
+.image devconf-gluster-heketi/h9.svg 500 _
+
+* Add more nodes
+
+Heketi will also determine the number of brick sets needed to satisfy the request
+
+.image devconf-gluster-heketi/h11.svg 500 _
 
 * Demo
 
 * Availability
 
-Fedora/EPEL
+Fedora/EPEL/CentOS Storage SIG
 
 - [[https://github.com/heketi/heketi/wiki/Installation][Documentation]]
 
 Container
 
 - [[https://hub.docker.com/r/heketi/heketi/][Documentation]]
-- Easy to try out in _mock_ mode
 
-	# docker run -d -p 8080:8080 heketi/heketi
-	# curl http://localhost:8080/hello
-
-- Or as to manage real systems
-
-	# mkdir config
-	# cp custom_heketi.json config/heketi.json
-	# mkdir db
-	# chmod 777 db
-	# docker run -d -p 8080:8080 --volume $PWD/config:/etc/heketi \
-	   		--volume $PWD/db:/var/lib/heketi \
-	   		heketi/heketi
 
 * Crawl...
 
-Known Issues:
+What's next?
 
 - Conflict resolution
 - Update database when _X_ fails
