@@ -62,8 +62,6 @@ On each system:
 	# gluster volume start myvolume
 	# mount -t glusterfs server1:myvolume /mnt/gluster/myvolume
 
-Works great as large NAS volume
-
 * Now do the same for...
 
 .image devconf-gluster-heketi/datacenter.jpg
@@ -76,12 +74,10 @@ Works great as large NAS volume
 
 * What is Heketi
 
+- Creates GlusterFS volumes dynamically
+- Intelligent brick allocator
 - REST application with authentication
-- Manage multiple nodes concurrently
-- Maintain information on the clusters
-- Simple deployment
-- Allow concurrent requests
-- Non-blocking
+- Supports multiple GlusterFS clusters
 - Written in Go
 
 * Project Heketi
