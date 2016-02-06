@@ -31,9 +31,10 @@ A volume is a collection of bricks
 
 .image devconf-gluster-heketi/volume.png _ 600
 
-* Node Setup
+* GlusterFS Setup
 
 On each system:
+
 - Peer probe to create trusted storage pool
 - Create the devices (RAID, Disk, LVM)
 - Setup a file system
@@ -43,7 +44,7 @@ On each system:
 
 * Create a volume
 
-	# sudo gluster volume create myvolume \
+	# gluster volume create myvolume \
 	    replica 2 \
 	    transport tcp \
 	    server1:/export/brick/myvolume1 \
@@ -52,8 +53,8 @@ On each system:
 	    server4:/export/brick/myvolume4 \
 	    server5:/export/brick/myvolume5 \
 	    server6:/export/brick/myvolume6
-	# sudo gluster volume start myvolume
-	# sudo mount -t glusterfs server1:myvolume /mnt/gluster/myvolume
+	# gluster volume start myvolume
+	# mount -t glusterfs server1:myvolume /mnt/gluster/myvolume
 
 * Now do the same for...
 
@@ -129,17 +130,26 @@ Heketi will determine the brick locations, it will then format and setup the fil
 
 .image devconf-gluster-heketi/h9.svg 500 _
 
-* Add more nodes
+* Volume ready
 
 Heketi will also determine the number of brick sets needed to satisfy the request
 
 .image devconf-gluster-heketi/h11.svg 500 _
 
+* Other features
+
+All GlusterFS durability types supported:
+
+- Replica 1, 2, 3
+- EC 4+2, 8+3
+
+Volume expansion
+
 * Demo
 
 * Availability
 
-Fedora/EPEL/CentOS Storage SIG
+Fedora/EPEL
 
 - [[https://github.com/heketi/heketi/wiki/Installation][Documentation]]
 
@@ -147,6 +157,9 @@ Container
 
 - [[https://hub.docker.com/r/heketi/heketi/][Documentation]]
 
+CentOS Storage SIG*
+
+- In progress
 
 * Crawl...
 
@@ -154,3 +167,4 @@ What's next?
 
 - Conflict resolution
 - Update database when _X_ fails
+- Use REST interface in upcoming Glusterd 2.0 
