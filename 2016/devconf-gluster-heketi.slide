@@ -16,7 +16,13 @@ Red Hat Storage
 
 * History
 
-Needed a service to manage the lifecycle of GlusterFS volumes across multiple clusters.
+New storage-as-a-service model for GlusterFS required by:
+
+- Kubernetes
+- OpenStack Manila
+- Others
+
+Needed a way to manage GlusterFS volumes
 
 * GlusterFS
 
@@ -55,6 +61,8 @@ On each system:
 	    server6:/export/brick/myvolume6
 	# gluster volume start myvolume
 	# mount -t glusterfs server1:myvolume /mnt/gluster/myvolume
+
+Works great as large NAS volume
 
 * Now do the same for...
 
