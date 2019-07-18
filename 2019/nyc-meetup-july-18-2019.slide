@@ -1,0 +1,557 @@
+Securing your gRPC Application
+Authentication, Authorization, and RBAC in gRPC
+
+July 18 2019
+
+Luis Pabón
+MTS, Portworx
+luis@portworx.com
+https://github.com/lpabon/go-slides
+@_lpabon_
+
+* About me
+
+Luis Pabón
+
+- CNCF Storage Technical Lead
+- Kubernetes SIG-Storage Community Member
+- Container Storage Interface (CSI) Community Member
+
+Previously at CoreOS and Red Hat Storage
+
+.image nyc-meetup-july-18-2019/me.jpg _ 400
+
+* History
+
+Requirements:
+
+- We wanted to create an SDK to make it easy for developers to integrate Portworx technology with their control plane
+- We wanted to make sure that only certain users had the ability to use certain resources
+
+We added gRPC authentication, authorization with RBAC to our [[https://libopenstorage.github.io][OpenStorage SDK]]
+
+* Security Models
+
+*Authentication*:
+
+- Who are you?
+- How can I trust that you are who you say you are?
+- What other information is there about you?
+
+*Authorization*:
+
+- Are you allowed to do what you are asking?
+- Are you allowed to access that information?
+
+* Authentication
+
+* Hello, my name
+
+.image nyc-meetup-july-18-2019/voice-is-password.jpg _ 800
+
+* Security Architecture
+
+- Discuss how to store passwords security
+- Manage passwords
+- ...
+
+* No!
+
+DO NOT DO PASSWORD MANAGEMENT!
+
+.image nyc-meetup-july-18-2019/no.gif _ 400
+
+* Authentication in gRPC
+
+This talk will be basing authentication on the following models:
+
+- Using JSON Web Token as stated in the [[https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-25][IETF draft]] to identify a user
+- gRPC applications should only verify the token from a trusted issuer
+
+* JWT
+
+JWT has the following components:
+
+  [ header . claims . signature ]
+
+Example:
+
+  eyJhb[...omitted for brevity...]HgQ
+
+*Header*: Token and signature types in clean text
+*Claims*: JSON formatted metadata about the user in clear text
+*Signature*: Signature created using crypto hash
+
+_Important_: Tokens are created by other entities and the gRPC applications only need to *verify* the token
+
+* Generating a token (Python)
+
+Python
+
+    import jwt
+    import datetime
+    import hashlib
+
+    secret = 'My secret'
+    claims = {}
+    claims['iss'] = tokenIssuer
+    claims['iat'] = datetime.datetime.utcnow()
+    claims['exp'] = datetime.datetime.utcnow() \
+        + datetime.timedelta(minutes=10)
+    print jwt.encode(claims, secret, algorithm='HS256')
+
+* Generating a token (Golang)
+
+Golang pseudocode
+
+  mapclaims := jwt.MapClaims{
+    "sub":   claimsSubject,
+    "iss":   tokenIssuer
+    "email": claimsEmail,
+    "name":  claimsName,
+    "role":  claimsRole,
+    "iat":   time.Now().Unix(),
+    "exp":   time.Now().Add(expDuration).Unix(),
+  }
+  token := jwt.NewWithClaims(signature.Type, mapclaims)
+  signedtoken, err := token.SignedString(signature.Key)
+
+See [[https://github.com/libopenstorage/openstorage-sdk-auth/blob/master/pkg/auth/auth.go#L60][github.com/libopenstorage/openstorage-sdk-auth]]
+
+* Client Token
+
+Clients insert the the token in the gRPC metadata
+
+Example (Golang):
+
+  import "google.golang.org/grpc/metadata"
+  
+  md := metadata.New(map[string]string{
+      "authorization": "bearer" + token,
+    })
+  ctx = metadata.NewOutgoingContext(context.Background(), md)
+  _, err := YourGrpcApi(ctx, ...)
+
+Example (Python):
+
+  md = []
+  md.append(("authorization", "bearer "+token))
+  
+  # Now add metadata to the call
+  stub = api_pb2_grpc.YourAPIStub(channel)
+  response = stub.YourApi(api_pb2.YourApiRequest(), metadata=md)
+
+* gRPC Server Architecture
+
+Use gRPC interceptors to get authentication and authorization support
+
+  +---------------+
+  |  Interceptor  |  <----- Client
+  +---------------+
+          |
+  +---------------+
+  |   gRPC Server |
+  |    Handlers   |
+  +---------------+
+
+Interceptors are initialized in the gRPC server configuration.
+
+
+* END
+
+Requirements:
+
+- Http REST service with authentication
+- Manage multiple nodes concurrently
+- Maintain information on the clusters
+- Simple deployment
+- Allow concurrent requests
+- Non-blocking
+
+* Project Heketi
+
+.link https://github.com/heketi/heketi
+
+.image nyc-meetup-july-18-2019/heketi_overview.png _ 640
+
+* Design
+
+.image nyc-meetup-july-18-2019/arch.jpg
+
+* Other Technologies
+
+Python
+
+- CherryPy, Bottlepy, Django
+
+Ruby
+
+- Rails, Sinatra, RESTRack
+
+Java
+
+- RESTx, Jersey
+
+* Why Go?
+
+- Easy JSON integration
+
+- Concurrency
+
+- Simple deployment
+
+- Simple HTTP framework
+
+- Integrated testing framework
+
+- Extra one*
+
+* HTTP/REST Standards and Definitions
+
+*Endpoint*:
+
+- http://server:port/<endpoint...>
+
+*Client*Methods*:
+
+- GET, PUT, HEAD, POST, DELETE
+- More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html][W3.org]]
+
+*Body*:
+
+- Contains data requested by the client. In REST calls, this could be either in XML or JSON format.
+
+* HTTP/REST Standards and Definitions
+
+*Head*:
+
+- Metadata like _Content-Type_ and _Status_
+
+*Server*Return*Status*Codes*:
+
+- 2xx: Successful
+- 3xx: Redirection
+- 4xx: Client Error
+- 5xx: Server Error
+- More info at [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html][W3.org]]
+
+* Lessons learned
+
+* Routing
+
+* Simple Go Web server
+
+.code nyc-meetup-july-18-2019/helloworld.go
+
+* Demo
+
+#.video nyc-meetup-july-18-2019/helloworld.webm video/webm
+.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/nyc-meetup-july-18-2019/helloworld.webm Click Here
+
+* Routing
+
+Gorilla web toolkit [[http://www.gorillatoolkit.org][www.gorillatoolkit.org]]
+
+- *Mux*: Routing
+- *Context*: Stores global variables
+- *Websocket*: Implements WebSocket protocol
+- Many more...
+
+.image nyc-meetup-july-18-2019/gorilla-icon-64.png _ 90
+
+* Create an App
+
+.code nyc-meetup-july-18-2019/app1.go /type/,
+
+* Demo
+
+#.video nyc-meetup-july-18-2019/app1.webm video/webm
+.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/nyc-meetup-july-18-2019/app1.webm Click Here
+
+* JSON
+
+* JSON
+
+- Supported by the languange
+
+- Easy to setup by adding tags to structs
+
+- Bool, float64, strings, slices, maps, integers, nil supported
+
+More information at [[https://golang.org/pkg/encoding/json/][Golang.org]]
+
+* Heketi JSON Models
+Brick Information:
+
+    type BrickInfo struct {
+        Id       string `json:"id"`
+        Path     string `json:"path"`
+        DeviceId string `json:"device"`
+        NodeId   string `json:"node"`
+
+        // Size in KB
+        Size uint64 `json:"size"`
+    }
+
+* Heketi JSON Model with Anonymous Struct
+
+Create Volume Request:
+
+    type VolumeCreateRequest struct {
+        // Size in GB
+        Size       int                  `json:"size"`
+        Clusters   []string             `json:"clusters,omitempty"`
+        Name       string               `json:"name"`
+        Durability VolumeDurabilityInfo `json:"durability,omitempty"`
+        Snapshot   struct {
+            Enable bool    `json:"enable"`
+            Factor float32 `json:"factor"`
+        } `json:"snapshot"`
+    }
+
+* Heketi JSON Model with Embedding
+
+    // Common accross requests and responses
+    type Device struct {
+        Name   string `json:"name"`
+        Weight int    `json:"weight"`
+    }
+
+    // Request
+    type DeviceAddRequest struct {
+        Device
+        NodeId string `json:"node"`
+    }
+
+    type DeviceInfo struct {
+        Device
+        Storage StorageSize `json:"storage"`
+        Id      string      `json:"id"`
+    }
+
+    // Response
+    type DeviceInfoResponse struct {
+        DeviceInfo
+        Bricks []BrickInfo `json:"bricks"`
+    } 
+
+* Update App to support JSON 
+
+.code nyc-meetup-july-18-2019/app2.go /start JSON structs/,/end JSON structs/
+
+* App: SaveKey()
+
+.code nyc-meetup-july-18-2019/app2.go /Func Save/,/End Func Save/
+
+* App: GetKey()
+
+.code nyc-meetup-july-18-2019/app2.go /Func Get/,/End Func Get/
+
+* App: GetAllKeys()
+
+.code nyc-meetup-july-18-2019/app2.go /Func GetAll/,/End Func GetAll/
+
+* App: Main()
+
+.code nyc-meetup-july-18-2019/app2.go /Main/,/End Main/
+
+* Demo
+
+#.video nyc-meetup-july-18-2019/app2.webm video/webm
+.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/nyc-meetup-july-18-2019/app2.webm Click Here
+
+* Logging
+
+- Golang provides simple Log API
+- Create your own or use others like [[https://github.com/op/go-logging][Go-logging]]
+
+Add logging to App:
+
+.code nyc-meetup-july-18-2019/app3.go /Log Var/,/end Log Var/
+
+.code nyc-meetup-july-18-2019/app3.go /Main/,/End Main/
+
+* Asynchronous HTTP
+
+* Asynchronous HTTP
+
+- Avoid timeouts
+- Provide a more responsive server
+- Server to provide a temporary resource to poll for completion
+
+.image nyc-meetup-july-18-2019/async.png
+
+* Heketi's Asynchronous API
+Some operations may take a long time to process. For these operations, Heketi will return _202_Accepted_ with a temporary resource set inside the _Location_ header. A client can then issue a _GET_ on this temporary resource and receive the following:
+
+- HTTP Status 200: Request is still in progress. We may decide to add some JSON ETA data here in future releases. Header _X-Pending_ will be set to the value of true
+- HTTP Status 404: Temporary resource requested is not found.
+- HTTP Status 500: Request completed and has failed. Body will be filled in with error information.
+- HTTP Status 303 See Other: Request has been completed successfully. The information requested can be retrieved by issuing a GET on the resource set inside the Location header.
+- HTTP Status 204 Done: Request has been completed successfully. There is no data to return.
+
+* App: Setup Asynchronous HTTP
+
+Use the Heketi [[https://godoc.org/github.com/heketi/rest][Asynchronous HTTP Manager]]:
+
+.code nyc-meetup-july-18-2019/app4.go /App struct/,/end App struct/
+.code nyc-meetup-july-18-2019/app4.go /Func NewApp/,/end Func NewApp/
+
+* App: Asynchronous HTTP
+
+.code nyc-meetup-july-18-2019/app4.go /Func BzKeys/,/End Func BzKeys/
+.code nyc-meetup-july-18-2019/app4.go /Main/,/End Main/
+
+* Demo
+
+#.video nyc-meetup-july-18-2019/app4.webm video/webm
+.link https://raw.githubusercontent.com/lpabon/go-slides/master/2016/nyc-meetup-july-18-2019/app4.webm Click Here
+
+* Database
+
+* BoltDB Database
+
+There are many databases for applications.
+
+A great, simple, but powerful database for Go applications is:  [[https://github.com/boltdb/bolt][BoltDB]]
+
+- Key-Value
+- 100% in Go
+- Also has: Key iterators, Range scans, and more
+- But, most important:
+
+!! It is a transactional database !!
+
+* Data Access
+
+- Data is saved in the database in _buckets_
+- _Buckets_ store _Keys_ and their _Values_
+
+Put data:
+
+    db.Update(func(tx *bolt.Tx) error {
+        b := tx.Bucket([]byte("MyBucket"))
+        err := b.Put([]byte("answer"), []byte("42"))
+        return err
+    })
+
+Get data:
+
+    db.Update(func(tx *bolt.Tx) error {
+        b := tx.Bucket([]byte("MyBucket"))
+        err := b.Put([]byte("answer"), []byte("42"))
+        return err
+    })
+
+* More on BoltDB
+
+*Transactional*database*+*Closures*=*AWESOMENESS*
+
+.image nyc-meetup-july-18-2019/awesomeness-achieved.jpg
+
+* Heketi Example
+    var msg NodeAddRequest
+    utils.GetJsonFromRequest(r, &msg)
+    err = a.db.Update(func(tx *bolt.Tx) error {
+        cluster, err := NewClusterEntryFromId(tx, msg.ClusterId)
+        if err != nil {
+            return err
+        }
+
+        cluster.NodeAdd(node.Info.Id)
+        err = cluster.Save(tx)
+        if err != nil {
+            return err
+        }
+        err = node.Save(tx)
+        if err != nil {
+            return err
+        }
+        return nil
+    })
+
+.link https://github.com/heketi/heketi/blob/master/apps/glusterfs/app_node.go#L27
+
+* Rolling back transactions in functions
+
+Ok, cool, so the database can roll back. 
+
+Can I do that in my normal functions? *YES!*
+
+    func work() (rollback_err error) {
+
+        defer func() {
+            if rollback_err != nil {
+                // .. Rollback
+            }
+        }
+
+        // Do work
+
+        // Do more work
+
+        // Do even more work
+        
+    } 
+
+* Middleware
+
+* Middleware
+
+There are quite a few middleware frameworks for Go, but the simplest (and very powerful) is [[https://github.com/codegangsta/negroni][Negroni]]
+
+All you need is the something like the following in your middleware:
+
+    func MyMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+      // do some stuff before
+      next(rw, r)
+      // do some stuff after
+    }
+
+You can add the middleware:
+
+    n := negroni.New()
+    n.Use(negroni.HandlerFunc(MyMiddleware))
+
+
+* Authentication
+
+Heketi uses simple JSON Web Tokens (JWT) as stated in the [[https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-25][IETF draft]]. A JWT is created for each REST call encrypted using a shared Key.
+
+Generating a client token in Python:
+
+    import jwt
+    import datetime
+    import hashlib
+    method = 'GET'
+    uri = '/volumes'
+    secret = 'My secret'
+    claims = {}
+    claims['iss'] = 'admin'
+    claims['iat'] = datetime.datetime.utcnow()
+    claims['exp'] = datetime.datetime.utcnow() \
+        + datetime.timedelta(minutes=10)
+    claims['qsh'] = hashlib.sha256(method + '&' + uri).hexdigest()
+    print jwt.encode(claims, secret, algorithm='HS256')
+
+- Place in request header
+
+    Authentication: bearer eyJhb[...omitted for brevity...]HgQ
+
+* Lastly
+
+* CI and Unit Tests
+
+- Travis, Coveralls
+- HTTP test package: net/http/httptest
+- Mocking with interfaces
+
+.image nyc-meetup-july-18-2019/testing.jpg _ 500
+
+* Other areas
+
+- Adding [[https://github.com/heketi/heketi/blob/master/extras/systemd/heketi.service][Systemd support]]
+- [[https://github.com/heketi/heketi/tree/master/extras/docker/centos7][Containerize]]
+- Client libraries
+- Config file
+
