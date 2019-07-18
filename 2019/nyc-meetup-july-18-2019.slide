@@ -28,7 +28,9 @@ Requirements:
 - We wanted to create an SDK to make it easy for developers to integrate Portworx technology with their control plane
 - We wanted to make sure that only certain users had the ability to use certain resources
 
-We added gRPC authentication, authorization with RBAC to our [[https://libopenstorage.github.io][OpenStorage SDK]]
+We createad the [[https://libopenstorage.github.io][OpenStorage SDK]], a gRPC based service which supports authentication and authorization with RBAC.
+
+This talk is based on our experience creating this service.
 
 * Security Models
 
@@ -55,9 +57,7 @@ We added gRPC authentication, authorization with RBAC to our [[https://libopenst
 - Manage passwords
 - ...
 
-* No!
-
-DO NOT DO PASSWORD MANAGEMENT!
+* DO NOT DO PASSWORD MANAGEMENT!
 
 .image nyc-meetup-july-18-2019/no.gif _ 400
 
@@ -84,23 +84,15 @@ Example:
 *Claims*: JSON formatted metadata about the user in clear text
 *Signature*: Signature created using crypto hash
 
-* Generating a token (Python)
+* Token Authority
+A token authority is the issuer of tokens.
 
-Python
+Many ways to generate tokens, but there are mainly two:
 
-    import jwt
-    import datetime
-    import hashlib
+- An application generates a token
+- OpenID Connect compliant server to generate tokens
 
-    secret = 'My secret'
-    claims = {}
-    claims['iss'] = tokenIssuer
-    claims['iat'] = datetime.datetime.utcnow()
-    claims['exp'] = datetime.datetime.utcnow() \
-        + datetime.timedelta(minutes=10)
-    print jwt.encode(claims, secret, algorithm='HS256')
-
-* Generating a token (Golang)
+* Application to generate a token
 
 Golang pseudocode
 
@@ -117,6 +109,20 @@ Golang pseudocode
   signedtoken, err := token.SignedString(signature.Key)
 
 See [[https://github.com/libopenstorage/openstorage-sdk-auth/blob/master/pkg/auth/auth.go#L60][github.com/libopenstorage/openstorage-sdk-auth]]
+
+* OpenID Connect
+Using an application to create tokens may satisfy many deployments, but some may require management of thousands of users.
+
+In this scenario, managing users is easier through a OpenID Connect, ODIC, compliant system.
+
+*OIDCs*:
+
+- [[https://www.keycloak.org/][Keycloak (open source)]]
+- [[https://github.com/dexidp/dex][Dex (open source)]]
+- [[https://github.com/tremolosecurity/openunison][OpenUnison (open source)]]
+- [[https://www.okta.com/][Okta]]
+- [[https://auth0.com/][Auth0.com]]
+- Google, Aws, etc.
 
 * Client Token
 
@@ -222,6 +228,17 @@ See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0
 	}
 
 See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/api/server/sdk/server_interceptors.go#L55-L88][Example]]
+
+* Golang verification libraries
+
+*Signed*by*an*application*:
+- [[github.com/dgrijalva/jwt-go]]
+- See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/pkg/auth/selfsigned.go#L91][Example]]
+
+*OIDC*:
+- [[https://github.com/coreos/go-oidc]]
+- See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/pkg/auth/oidc.go#L77-L96][Example]]
+
 
 * Authorization
 
