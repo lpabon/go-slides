@@ -61,6 +61,8 @@ DO NOT DO PASSWORD MANAGEMENT!
 
 .image nyc-meetup-july-18-2019/no.gif _ 400
 
+_Important_: Tokens are created by other entities and the gRPC applications only need to *verify* the token
+
 * Authentication in gRPC
 
 This talk will be basing authentication on the following models:
@@ -81,8 +83,6 @@ Example:
 *Header*: Token and signature types in clean text
 *Claims*: JSON formatted metadata about the user in clear text
 *Signature*: Signature created using crypto hash
-
-_Important_: Tokens are created by other entities and the gRPC applications only need to *verify* the token
 
 * Generating a token (Python)
 
@@ -223,5 +223,137 @@ See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0
 
 See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/api/server/sdk/server_interceptors.go#L55-L88][Example]]
 
+* Authorization
 
+* RBAC
+
+Role Based Access Control (RBAC) is a model used to authorize user access.
+
+- [[https://kubernetes.io/docs/reference/access-authn-authz/rbac/#api-overview][Kubernetes uses RBAC]] to control access to its API
+- In [[https://libopenstorage.github.io/w/release-6.1.generated-api.html#serviceopenstorageapiopenstoragerole][OpenStorge SDK]] we use RBAC to control access to the gRPC API.
+
+Roles are _keys_ to _rules_:
+
+* RBAC in gRPC
+
+Kubernetes RBAC rules are based on HTTP-like verbs like _get_, _list_, _patch_, etc.
+In gRPC we need to do something different.
+
+A gRPC RPC call looks like the following:
+
+	service RouteGuide {
+		rpc GetFeature(Point) returns (Feature) {}
+		rpc ListFeatures(Rectangle) returns (stream Feature) {}
+	}
+
+See [[https://github.com/grpc/grpc-go/blob/f7de2c8d62aff2193c58a25252ea5cd183fd26b7/examples/route_guide/routeguide/route_guide.proto#L24][route_guide.proto]]
+
+RBAC in gRPC can be broken down to a set of rules on _Services_ and _Apis_.
+
+* RBAC in gRPC
+
+Logically, we need the gRPC to support the following:
+
+	"myrole": [
+		"services" : [
+			"routeguide"
+		],
+		"apis" : [
+			"getfeature"
+		]
+	]
+
+In this example, the role _myrole_ does not have access to the _ListFeatures()_ API.
+
+* RBAC Values
+
+- How do we know what string values to pick?
+- How do we implement this?
+
+Interceptors have `info.FullMethod` which have the following:
+
+    /<gRpc Name>Service/Api
+
+In OpenStorage SDK we have the following `info.FullMethod`:
+
+	/openstorage.api.OpenStorage<service>/<Api>
+
+See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/pkg/role/sdkserviceapi.go#L338-L339][Example]]
+
+
+* Example Rules in Golang
+
+The following is an example from OpenStorage SDK:
+
+	// "myrole" allow access to all APIs in the Volume and Cluster services
+	defaultRoles = map[string][]*api.SdkRule{
+	  "myrole": {
+		&api.SdkRule{
+			Services: []string{
+				"volume",
+				"cluster",
+			},
+			Apis: []string{"*"},
+	  },
+	}
+
+See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/pkg/role/sdkserviceapi.go#L39-L65][Example]]
+
+* Authorization Interceptor
+
+	func authorizationServerInterceptor(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+
+		// Get user information place here from the authentication interceptor
+		userinfo, ok := auth.NewUserInfoFromContext(ctx)
+		claims := &userinfo.Claims
+
+		// Authorize passing in the roles from the JWT claims
+		if err := Verify(ctx, claims.Roles, info.FullMethod); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied,
+				"Access to %s denied: %v", info.FullMethod, err)
+		}
+
+		// Execute the command
+		return handler(ctx, req)
+	}
+
+See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/api/server/sdk/server_interceptors.go#L117][Example (plus Audit log!)]]
+
+* What about normal REST access to the service?
+
+[[https://github.com/grpc-ecosystem/grpc-gateway][grpc-gateway]]
+
+- Automate generation of a REST to gRPC gateway
+- Add an annotation to your proto RPC APIs
+- Generate the gateway Golang file
+- The gateway will automatically forward the _Authorization_ bearer token header
+- Just register the handlers and start it
+
+* Sample annotation on a proto file
+
+	service OpenStorageRole {
+
+	// Create a role for users in the system
+	rpc Create(SdkRoleCreateRequest)
+		returns (SdkRoleCreateResponse){
+			option(google.api.http) = {
+				post: "/v1/roles"
+				body: "*"
+			};
+		}
+	}
+
+See [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/api/api.proto#L1084-L1093][Example]]
+
+* Some last notes on gRPC
+
+Generate documentation: [[https://github.com/pseudomuto/protoc-gen-doc][protoc-gen-doc]]
+  - Example: [[https://github.com/libopenstorage/libopenstorage.github.io]]
+
+Versioning gRPC: [[https://github.com/libopenstorage/openstorage/blob/3d7c200148a18d9586811f0250b1b90f7466e69b/api/api.proto#L3347-L3379][Versioning in your proto file]]
 
